@@ -31,7 +31,7 @@ type SignalData struct {
 type Result struct {
 	PayloadData
 	Success bool
-	Error   error
+	Error   string
 }
 
 // RequestResponse is a workflow to coordinate a signal delivery and output check in a Request-Response fashion
@@ -44,7 +44,8 @@ func RequestResponse(ctx workflow.Context, payload *Payload) (*Result, error) {
 	pd := SignalData{
 		CompletionTargetID: wi.WorkflowExecution.ID,
 		PayloadData: PayloadData{
-			Data: payload.Data,
+			ByteData: payload.ByteData,
+			Data:     payload.Data,
 		},
 	}
 	// target the latest runID

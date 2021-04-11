@@ -14,7 +14,7 @@ import (
 
 func errorToProxy(ctx workflow.Context, ID string, err error) {
 	workflow.SignalExternalWorkflow(ctx, ID, "", proxy.ResponseSignal, &proxy.Result{
-		Error: err,
+		Error: err.Error(),
 	})
 }
 
@@ -70,7 +70,7 @@ func AccountWorkflow(ctx workflow.Context, account *Account) (*Account, error) {
 		resp := &UpgradeResponse{
 			ValidFrom: validFrom,
 		}
-		bytes, err := json.Marshal(&resp)
+		bytes, err := json.Marshal(resp)
 		if err != nil {
 			errorToProxy(ctx, payload.CompletionTargetID, fmt.Errorf("failed to marshal response: %v", err))
 			return
@@ -113,11 +113,9 @@ func AccountWorkflow(ctx workflow.Context, account *Account) (*Account, error) {
 			errorToProxy(ctx, payload.CompletionTargetID, fmt.Errorf("access denied to account from %s", r.Actor))
 			return
 		}
-		// execute deletion
-		terminated := workflow.Now(ctx)
-		account.Terminated = &terminated
 
-		workflow.SignalExternalWorkflow(
+		// send response before workflow gets terminated
+		_ = workflow.SignalExternalWorkflow(
 			ctx,
 			payload.CompletionTargetID,
 			"",
@@ -125,7 +123,11 @@ func AccountWorkflow(ctx workflow.Context, account *Account) (*Account, error) {
 			&proxy.Result{
 				Success: true,
 			},
-		)
+		).Get(ctx, nil)
+
+		// execute deletion
+		terminated := workflow.Now(ctx)
+		account.Terminated = &terminated
 	})
 
 	// weekly history refresh

@@ -81,8 +81,8 @@ func deleteAccount(c client.Client, actor string) {
 	var result *proxy.Result
 	err = deleteWE.Get(context.Background(), &result)
 	failOnErr(err, "Unable to get UpgradeResponse")
-	if result.Error != nil {
-		log.Println("ERR: DeleteRequest failed", result.Error.Error())
+	if result.Error != "" {
+		log.Println("ERR: DeleteRequest failed", result.Error)
 		return
 	}
 
@@ -123,8 +123,8 @@ func upgradeAccount(c client.Client, actor string) {
 	var result *proxy.Result
 	err = upgradeWE.Get(context.Background(), &result)
 	failOnErr(err, "Unable to get UpgradeResponse")
-	if result.Error != nil {
-		log.Println("ERR: UpgradeRequest failed", result.Error.Error())
+	if result.Error != "" {
+		log.Println("ERR: UpgradeRequest failed", result.Error)
 		return
 	}
 
@@ -137,7 +137,7 @@ func upgradeAccount(c client.Client, actor string) {
 	err = json.Unmarshal(result.ByteData, &upgradeResponse)
 	failOnErr(err, "Failed to unmarshal UpgradeResponse")
 	// or unmarshal response from proto.Message
-	var updateTs *timestamp.Timestamp
+	updateTs := &timestamp.Timestamp{}
 	err = anypb.UnmarshalTo(result.Data, updateTs, proto.UnmarshalOptions{})
 	failOnErr(err, "Unable to unmarshal updateTimestamp")
 	log.Printf("Account upgrade to %s is valid from %v. Update timestamp=%v\n", upgradeRequest.To, upgradeResponse.ValidFrom, updateTs)
