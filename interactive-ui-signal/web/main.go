@@ -79,7 +79,6 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		switch r.URL.Path {
 		case "/api/accounts":
-			// todo list accounts from temporal
 			openWorkflows, err := temporalClient.ListOpenWorkflow(context.Background(), &workflowservice.ListOpenWorkflowExecutionsRequest{
 				Filters: &workflowservice.ListOpenWorkflowExecutionsRequest_TypeFilter{
 					TypeFilter: &filter.WorkflowTypeFilter{Name: "AccountWorkflow"},
