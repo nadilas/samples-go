@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"go.temporal.io/sdk/workflow"
-	"google.golang.org/protobuf/types/known/anypb"
 )
 
 const (
@@ -11,7 +10,6 @@ const (
 
 type PayloadData struct {
 	ByteData []byte
-	Data     *anypb.Any
 }
 
 // Payload is the input for a signal execution, which will be transformed and passed down to the target as ProxySignalData
@@ -45,7 +43,6 @@ func RequestResponse(ctx workflow.Context, payload *Payload) (*Result, error) {
 		CompletionTargetID: wi.WorkflowExecution.ID,
 		PayloadData: PayloadData{
 			ByteData: payload.ByteData,
-			Data:     payload.Data,
 		},
 	}
 	// target the latest runID

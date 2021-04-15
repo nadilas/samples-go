@@ -7,9 +7,6 @@ import (
 
 	"github.com/temporalio/samples-go/interactive-ui-signal/proxy"
 	"go.temporal.io/sdk/workflow"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/anypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func errorToProxy(ctx workflow.Context, ID string, err error) {
@@ -47,13 +44,6 @@ func AccountWorkflow(ctx workflow.Context, account *Account) (*Account, error) {
 			errorToProxy(ctx, payload.CompletionTargetID, err)
 			return
 		}
-		// or use proto
-		timestamp := &timestamppb.Timestamp{}
-		err = anypb.UnmarshalTo(payload.Data, timestamp, proto.UnmarshalOptions{})
-		if err != nil {
-			errorToProxy(ctx, payload.CompletionTargetID, err)
-			return
-		}
 
 		// validate request
 		if r.Actor != account.Name {
@@ -75,9 +65,6 @@ func AccountWorkflow(ctx workflow.Context, account *Account) (*Account, error) {
 			errorToProxy(ctx, payload.CompletionTargetID, fmt.Errorf("failed to marshal response: %v", err))
 			return
 		}
-		// or proto
-		updateTs := timestamppb.New(validFrom)
-		any, _ := anypb.New(updateTs)
 		// send response
 		workflow.SignalExternalWorkflow(
 			ctx,
@@ -88,7 +75,6 @@ func AccountWorkflow(ctx workflow.Context, account *Account) (*Account, error) {
 				Success: true,
 				PayloadData: proxy.PayloadData{
 					ByteData: bytes,
-					Data:     any,
 				},
 			},
 		)
@@ -134,6 +120,13 @@ func AccountWorkflow(ctx workflow.Context, account *Account) (*Account, error) {
 	sel.AddFuture(workflow.NewTimer(ctx, time.Hour*168), func(f workflow.Future) {
 		cleanHistory = true
 	})
+
+	err := workflow.SetQueryHandler(ctx, "plan", func() (string, error) {
+		return account.Plan, nil
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	// main loop
 	for account.Terminated == nil && !cleanHistory {
