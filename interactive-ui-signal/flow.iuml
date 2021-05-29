@@ -1,0 +1,8 @@
+@startuml
+Client -> API : POST /api/account/upgrade
+API -> ProxyWorkflow : ExecuteWorkflow(signalType, signalInput)
+ProxyWorkflow -> AccountWorkflow : SignalExternalWorkflow(accountId, requestData)
+AccountWorkflow -> ProxyWorkflow : SignalExternalWorkflow(proxyId, responseData)
+ProxyWorkflow -> API : workflowExecution.Get()
+API -> Client : write(responseData)
+@enduml

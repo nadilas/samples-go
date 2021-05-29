@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React from 'react'
 import {Button, ButtonGroup, useToast} from '@chakra-ui/react'
 import {Account} from './Accounts'
 import axios from 'axios'
@@ -39,7 +39,7 @@ export const AccountActions: React.FC<AccountActionsProps> = ({account, plan}) =
                 // inform user
                 toast({
                   title: "Account changed.",
-                  description: "Account successfully upgraded to premium.",
+                  description: `Account successfully changed to ${planTarget}.`,
                   status: "success",
                   duration: 3000,
                   isClosable: true,
